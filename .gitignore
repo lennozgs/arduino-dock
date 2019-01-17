@@ -7,4 +7,4 @@ twibootloader/twiboot.map
 twidude/bin/
 twidude/build/
 *.sublime-*
-
+*.ino.hex
