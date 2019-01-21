@@ -1,5 +1,4 @@
-#LOCAL_PATH:= $(call my-dir)
-LOCAL_PATH:=/DATA2/DATA/aosp/ODROID/XU4/working_dir/external/twidude
+LOCAL_PATH:= $(call my-dir)
 BUILD_DIR:=$(LOCAL_PATH)/build
 
 common_cflags:= \
