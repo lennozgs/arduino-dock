@@ -126,6 +126,19 @@
 #define MEMTYPE_EEPROM				0x02
 #define MEMTYPE_PARAMETERS			0x03				/* only in APP */
 
+/* Neopixels alternatives */
+#define NEO_RGB  ((0<<6) | (0<<4) | (1<<2) | (2)) ///< Transmit as R,G,B
+#define NEO_RBG  ((0<<6) | (0<<4) | (2<<2) | (1)) ///< Transmit as R,B,G
+#define NEO_GRB  ((1<<6) | (1<<4) | (0<<2) | (2)) ///< Transmit as G,R,B
+#define NEO_GBR  ((2<<6) | (2<<4) | (0<<2) | (1)) ///< Transmit as G,B,R
+#define NEO_BRG  ((1<<6) | (1<<4) | (2<<2) | (0)) ///< Transmit as B,R,G
+#define NEO_BGR  ((2<<6) | (2<<4) | (1<<2) | (0)) ///< Transmit as B,G,R
+
+//#define NEO_ALT (NEO_RGB & 0xFF)
+#define NEO_ALT (NEO_GRB & 0xFF)
+//#define NEO_ALT (NEO_RBG & 0xFF)
+
+#define NEO_ADDR 10
 /*
  * LED_GN blinks with 20Hz (while bootloader is running)
  * LED_RT blinks on TWI activity
@@ -231,6 +244,30 @@ static void write_eeprom_byte(uint8_t val)
 #endif
 	eeprom_busy_wait();
 }
+
+static void write_eeprom_neo(){
+    //Read eeprom value
+    EEARL = NEO_ADDR;
+    EEARH = (NEO_ADDR >> 8);
+    EECR |= (1<<EERE);
+
+    uint8_t val = EEDR;
+
+    if(val != NEO_ALT){
+        EEARL = NEO_ADDR;
+        EEARH = (NEO_ADDR >> 8);
+        EEDR = NEO_ALT;
+#if defined (__AVR_ATmega8__)
+        EECR |= (1<<EEMWE);
+        EECR |= (1<<EEWE);
+#elif defined (__AVR_ATmega88__) || defined (__AVR_ATmega168__) || defined (__AVR_ATmega328P__)
+        EECR |= (1<<EEMPE);
+        EECR |= (1<<EEPE);
+#endif 
+        eeprom_busy_wait();
+    }
+}
+
 #endif /* EEPROM_SUPPORT */
 
 ISR(TWI_vect)
@@ -486,6 +523,10 @@ int main(void)
 #endif
 
 	LED_OFF();
+
+#if (EEPROM_SUPPORT)
+        write_eeprom_neo();
+#endif
 
 	uint16_t wait = 0x0000;
 	do {
