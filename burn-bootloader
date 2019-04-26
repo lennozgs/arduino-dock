@@ -1,0 +1,37 @@
+#!/bin/bash
+
+function usage(){
+    echo "##############################################"
+    echo "# Usage : ./burn-bootloader"
+    echo "# arg : " 
+    echo "#         --baudrate | -bd"
+    echo "#         --device | -d"
+    echo "##############################################"
+}
+
+BAUDRATE=""
+DEVICE=""
+
+while [ "$1" != "" ]; do
+    PARAM=`echo $1 | awk -F= '{print $1}'`
+    VALUE=`echo $1 | awk -F= '{print $2}'`
+    case $PARAM in
+        -h | --help)
+            usage
+            exit
+            ;;  
+        -bd | --baudrate)
+            BAUDRATE="$VALUE"
+            ;;  
+        -d | --device)
+            DEVICE="$VALUE"
+            ;;
+    esac
+    shift
+done
+
+/Applications/Arduino.app/Contents/Java/hardware/tools/avr/bin/avrdude -C/Applications/Arduino.app/Contents/Java/hardware/tools/avr/etc/avrdude.conf -v -patmega328p -cstk500v1 -P$DEVICE -b$BAUDRATE -e -Ulock:w:0x3F:m -Uefuse:w:0x05:m -Uhfuse:w:0xDA:m -Ulfuse:w:0xFF:m
+
+sleep 0.3
+
+/Applications/Arduino.app/Contents/Java/hardware/tools/avr/bin/avrdude -C/Applications/Arduino.app/Contents/Java/hardware/tools/avr/etc/avrdude.conf -v -patmega328p -cstk500v1 -P$DEVICE -b$BAUDRATE -Uflash:w:twibootloader/twiboot.hex -Ulock:w:0x0f:m
