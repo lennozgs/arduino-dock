@@ -508,7 +508,6 @@ void disable_wdt_timer(void)
 #endif
 
 /******** RING *********/
-
 typedef struct rgb_color
 {
       uint8_t red, green, blue;
@@ -593,41 +592,24 @@ void __attribute__((noinline)) led_strip_write(rgb_color * colors, uint16_t coun
     );
 
     // Uncomment the line below to temporarily enable interrupts between each color.
-    //sei(); asm volatile("nop\n"); cli();
+    sei(); asm volatile("nop\n"); cli();
   }
   sei();          // Re-enable interrupts now that we are done.
   _delay_us(80);  // Send the reset signal.
 }
 
 #define LED_COUNT 24 
-
+#define COLOR (struct rgb_color){ 128, 0, 0 } 
+rgb_color colors[LED_COUNT] = { COLOR,COLOR,COLOR,COLOR,COLOR,COLOR,COLOR,COLOR,COLOR,COLOR,COLOR,COLOR,COLOR,COLOR,COLOR,COLOR,COLOR,COLOR,COLOR,COLOR,COLOR,COLOR,COLOR,COLOR };
 /**********************/
 
 int main(void) __attribute__ ((noreturn));
 int main(void) {
 
+        led_strip_write(colors, LED_COUNT);
+
         LED_INIT();
         LED_GN_ON();
-
-        int j = 0;
-        uint8_t i = 0;
-        rgb_color colors[LED_COUNT];
-
-        while (j <= 255) {
-            i = 0;
-            while (i < LED_COUNT){ colors[i] = (rgb_color){(uint8_t)j, 0, 0}; i++; }
-            led_strip_write(colors, LED_COUNT);
-            j += 5;
-            _delay_ms(50);
-        }
-        j = 0;
-        while (j <= 255) {
-            i = 0;
-            while (i < LED_COUNT){ colors[i] = (rgb_color){(uint8_t)(255 - j), 0, 0}; i++; }
-            led_strip_write(colors, LED_COUNT);
-            j += 5;
-            _delay_ms(50);
-        }
 
 	/* move interrupt-vectors to bootloader */
 	/* timer0: running with F_CPU/1024, OVF interrupt */
